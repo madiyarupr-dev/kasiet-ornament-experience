@@ -1,40 +1,42 @@
 import { NextResponse } from "next/server";
-import { LeadPayload } from "@/lib/types";
-import { sendToCrm } from "@/config/crm";
 
 export const runtime = "nodejs";
 
-function isValidPayload(body: unknown): body is LeadPayload {
-  if (typeof body !== "object" || body === null) return false;
-  const b = body as Record<string, unknown>;
-  return (
-    typeof b.name === "string" &&
-    typeof b.city === "string" &&
-    typeof b.whatsapp === "string" &&
-    typeof b.result === "string" &&
-    Array.isArray(b.answers)
-    );
-}
+type LeadPayload = {
+  name?: string;
+  phone?: string;
+  contact?: string;
+  result?: string;
+  answers?: string[];
+};
 
 export async function POST(request: Request) {
-  let body: unknown;
+  let data: LeadPayload = {};
   try {
-    body = await request.json();
+    data = (await request.json()) as LeadPayload;
   } catch {
-    return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_json" },
+      { status: 400 }
+    );
   }
-  if (!isValidPayload(body)) {
-    return NextResponse.json({ ok: false, error: "Заполните имя, город и WhatsApp" }, { status: 422 });
+
+  if (!data.name || !data.phone) {
+    return NextResponse.json(
+      { ok: false, error: "missing_fields" },
+      { status: 422 }
+    );
   }
-  const payload: LeadPayload = {
-    ...body,
-    createdAt: body.createdAt || new Date().toISOString(),
-    source: body.source || "kasiet-quiz-web",
-  };
-  console.log("[KASIET LEAD]", JSON.stringify(payload));
-  const crm = await sendToCrm(payload);
-  if (!crm.ok) {
-    console.warn("[KASIET CRM WARN]", crm.provider, crm.detail);
-  }
-  return NextResponse.json({ ok: true, crm: crm.provider });
+
+  // NOTE: CRM/webhook integration (AmoCRM / Bitrix / Google Sheets)
+  // will be connected later via environment variables. For now we just
+  // log the lead on the server and acknowledge it. No secrets in code.
+  console.log("New lead:", {
+    name: data.name,
+    phone: data.phone,
+    contact: data.contact ?? null,
+    result: data.result ?? null,
+  });
+
+  return NextResponse.json({ ok: true });
 }
