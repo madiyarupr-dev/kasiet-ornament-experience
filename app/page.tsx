@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-type ResultKey = "keeper" | "mentor" | "creator" | "explorer";
+type CategoryKey = "rod" | "nasledie" | "razvitie" | "tvorchestvo" | "dostatok";
 
-type Option = { label: string; weight: ResultKey };
+type Option = { label: string; weight: CategoryKey };
 type Question = { step: string; title: string; hint: string; options: Option[] };
 
 const QUESTIONS: Question[] = [
@@ -13,11 +13,11 @@ const QUESTIONS: Question[] = [
     title: "Что сегодня для вас наиболее важно?",
     hint: "Выберите один из вариантов, который точнее всего отражает ваше текущее состояние.",
     options: [
-      { label: "Семья", weight: "keeper" },
-      { label: "Достаток", weight: "explorer" },
-      { label: "Развитие", weight: "creator" },
-      { label: "Творчество", weight: "creator" },
-      { label: "Наследие", weight: "mentor" },
+      { label: "Семья", weight: "rod" },
+      { label: "Достаток", weight: "dostatok" },
+      { label: "Развитие", weight: "razvitie" },
+      { label: "Творчество", weight: "tvorchestvo" },
+      { label: "Наследие", weight: "nasledie" },
     ],
   },
   {
@@ -25,11 +25,11 @@ const QUESTIONS: Question[] = [
     title: "Что вам ближе?",
     hint: "Выберите путь, который резонирует с вашими думами сегодня.",
     options: [
-      { label: "Обучать других", weight: "mentor" },
-      { label: "Создавать изделия", weight: "creator" },
-      { label: "Изучать историю", weight: "explorer" },
-      { label: "Развивать свой проект", weight: "explorer" },
-      { label: "Передавать знания детям", weight: "keeper" },
+      { label: "Обучать других", weight: "nasledie" },
+      { label: "Создавать изделия", weight: "tvorchestvo" },
+      { label: "Изучать историю", weight: "nasledie" },
+      { label: "Развивать свой проект", weight: "razvitie" },
+      { label: "Передавать знания детям", weight: "rod" },
     ],
   },
   {
@@ -37,53 +37,32 @@ const QUESTIONS: Question[] = [
     title: "Где вы хотели бы применять знания об орнаментах?",
     hint: "Выберите сферу, которая вам ближе всего.",
     options: [
-      { label: "В образовании", weight: "mentor" },
-      { label: "В творчестве", weight: "creator" },
-      { label: "В бизнесе", weight: "explorer" },
-      { label: "В семье", weight: "keeper" },
-      { label: "Для собственного развития", weight: "explorer" },
+      { label: "В образовании", weight: "nasledie" },
+      { label: "В творчестве", weight: "tvorchestvo" },
+      { label: "В бизнесе", weight: "dostatok" },
+      { label: "В семье", weight: "rod" },
+      { label: "Для собственного развития", weight: "razvitie" },
     ],
   },
 ];
 
-type ResultInfo = {
-  key: ResultKey;
-  name: string;
-  ornament: string;
-  title: string;
-  text: string;
+type ResultInfo = { key: CategoryKey; name: string };
+
+const RESULTS: Record<CategoryKey, ResultInfo> = {
+  rod: { key: "rod", name: "Род" },
+  nasledie: { key: "nasledie", name: "Наследие" },
+  razvitie: { key: "razvitie", name: "Развитие" },
+  tvorchestvo: { key: "tvorchestvo", name: "Творчество" },
+  dostatok: { key: "dostatok", name: "Достаток" },
 };
 
-const RESULTS: Record<ResultKey, ResultInfo> = {
-  keeper: {
-    key: "keeper",
-    name: "Хранитель",
-    ornament: "Қошқар мүйіз",
-    title: "Ваш орнамент — оберег рода",
-    text: "Вы храните тепло семьи и связь поколений. Ваш символ оберегает дом, достаток и память предков, передавая силу рода тем, кто идёт следом.",
-  },
-  mentor: {
-    key: "mentor",
-    name: "Наставник",
-    ornament: "Түйе табан",
-    title: "Ваш орнамент — путь знания",
-    text: "Вы несёте мудрость и передаёте её другим. Ваш символ — про опыт, терпение и наставничество: вы прокладываете дорогу для тех, кто учится.",
-  },
-  creator: {
-    key: "creator",
-    name: "Творец",
-    ornament: "Гүл өрнегі",
-    title: "Ваш орнамент — живое творчество",
-    text: "Вы создаёте красоту и вдыхаете жизнь в традицию. Ваш символ цветёт и развивается, превращая наследие в новое искусство.",
-  },
-  explorer: {
-    key: "explorer",
-    name: "Искатель",
-    ornament: "Су жолы",
-    title: "Ваш орнамент — поток и движение",
-    text: "Вы стремитесь вперёд, к новым горизонтам и возможностям. Ваш символ — это путь воды: гибкость, рост и неустанное движение к цели.",
-  },
-};
+const CATEGORY_ORDER: CategoryKey[] = [
+  "rod",
+  "nasledie",
+  "razvitie",
+  "tvorchestvo",
+  "dostatok",
+];
 
 const FEATURES = [
   { t: "Древний код", d: "орнамента" },
@@ -96,20 +75,21 @@ type Stage = "intro" | "quiz" | "result" | "thanks";
 export default function Page() {
   const [stage, setStage] = useState<Stage>("intro");
   const [current, setCurrent] = useState(0);
-  const [scores, setScores] = useState<Record<ResultKey, number>>({
-    keeper: 0,
-    mentor: 0,
-    creator: 0,
-    explorer: 0,
+  const [scores, setScores] = useState<Record<CategoryKey, number>>({
+    rod: 0,
+    nasledie: 0,
+    razvitie: 0,
+    tvorchestvo: 0,
+    dostatok: 0,
   });
   const [selected, setSelected] = useState<number | null>(null);
-  const [result, setResult] = useState<ResultKey | null>(null);
+  const [result, setResult] = useState<CategoryKey | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", contact: "" });
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function startQuiz() {
-    setScores({ keeper: 0, mentor: 0, creator: 0, explorer: 0 });
+    setScores({ rod: 0, nasledie: 0, razvitie: 0, tvorchestvo: 0, dostatok: 0 });
     setCurrent(0);
     setSelected(null);
     setResult(null);
@@ -126,9 +106,16 @@ export default function Page() {
       setCurrent(current + 1);
       setSelected(null);
     } else {
-      const winner = (Object.keys(nextScores) as ResultKey[]).reduce((a, b) =>
-        nextScores[b] > nextScores[a] ? b : a
-      );
+      // Deterministic result: pick the category with the highest count.
+      // Ties are broken by a fixed priority order (CATEGORY_ORDER).
+      let winner: CategoryKey = CATEGORY_ORDER[0];
+      let max = -1;
+      for (const key of CATEGORY_ORDER) {
+        if (nextScores[key] > max) {
+          max = nextScores[key];
+          winner = key;
+        }
+      }
       setResult(winner);
       setStage("result");
     }
@@ -154,7 +141,6 @@ export default function Page() {
       if (!res.ok) throw new Error("request_failed");
       setStage("thanks");
     } catch {
-      // Even if the API is not connected yet, do not block the user.
       setStage("thanks");
     } finally {
       setSending(false);
@@ -183,10 +169,10 @@ export default function Page() {
             </h1>
             <p className="hero-text">
               Наш предок отразил в орнаменте пожелание, силу, защиту и судьбу.
-              Пройдите короткий тест и откройте язык символов.
+              Ответьте на несколько вопросов и откройте язык символов.
             </p>
             <button className="btn" onClick={startQuiz}>
-              ПРОЙТИ ТЕСТ →
+              УЗНАТЬ ЗНАЧЕНИЕ СВОЕГО СИМВОЛА →
             </button>
             <ul className="features">
               {FEATURES.map((f) => (
@@ -222,7 +208,7 @@ export default function Page() {
               ))}
             </div>
             <button className="btn" onClick={answer} disabled={selected === null}>
-              {current < QUESTIONS.length - 1 ? "ДАЛЕЕ →" : "ЗАВЕРШИТЬ ТЕСТ →"}
+              {current < QUESTIONS.length - 1 ? "ДАЛЕЕ →" : "УЗНАТЬ РЕЗУЛЬТАТ →"}
             </button>
           </section>
         )}
@@ -233,17 +219,29 @@ export default function Page() {
               <Ornament />
             </div>
             <div className="result-tag serif gold-text">{r.name}</div>
-            <div className="result-orn">{r.ornament}</div>
-            <h2 className="q-title serif">{r.title}</h2>
-            <p className="hero-text">{r.text}</p>
+            <h2 className="q-title serif">Ваш символ определён</h2>
+            <p className="hero-text">
+              По вашим ответам мы определили направление, которому соответствует
+              одна из ключевых групп тюркских символов.
+            </p>
+            <p className="hero-text">
+              Полную расшифровку вашего результата, значение символа и его связь
+              с системой орнаментов Kasiet вы сможете получить на интенсиве Жанар.
+            </p>
+            <ul className="bullets">
+              <li>как читать язык орнаментов</li>
+              <li>какие смыслы вкладывали предки в каждый символ</li>
+              <li>
+                как применять знания об орнаментах в жизни, семье, образовании и
+                творчестве
+              </li>
+            </ul>
 
             <form className="lead" onSubmit={submit}>
-              <p className="lead-lead serif">
-                Получите расшифровку вашего орнамента
-              </p>
+              <p className="lead-lead serif">Забронируйте место на интенсиве</p>
               <input
                 className="field"
-                placeholder="Ваше имя"
+                placeholder="Имя"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
@@ -256,20 +254,13 @@ export default function Page() {
               />
               <input
                 className="field"
-                placeholder="Telegram / e-mail (необязательно)"
+                placeholder="Telegram (необязательно)"
                 value={form.contact}
                 onChange={(e) => setForm({ ...form, contact: e.target.value })}
               />
               {error && <div className="err">{error}</div>}
               <button className="btn" type="submit" disabled={sending}>
-                {sending ? "ОТПРАВЛЯЕМ…" : "ПОЛУЧИТЬ РАСШИФРОВКУ →"}
-              </button>
-              <button
-                type="button"
-                className="link"
-                onClick={startQuiz}
-              >
-                Пройти тест заново
+                {sending ? "ОТПРАВЛЯЕМ…" : "ЗАБРОНИРОВАТЬ МЕСТО →"}
               </button>
             </form>
           </section>
@@ -280,14 +271,15 @@ export default function Page() {
             <div className="ornament small" aria-hidden>
               <Ornament />
             </div>
-            <h2 className="q-title serif gold-text">Рахмет!</h2>
+            <h2 className="q-title serif gold-text">Спасибо за регистрацию</h2>
             <p className="hero-text">
-              Спасибо! Мы получили вашу заявку и скоро свяжемся с вами, чтобы
-              передать полную расшифровку вашего орнамента.
+              Мы получили вашу заявку. Перед началом интенсива отправим вам всю
+              необходимую информацию и ссылку для участия.
             </p>
-            <button className="btn" onClick={startQuiz}>
-              ПРОЙТИ ТЕСТ ЗАНОВО →
-            </button>
+            <p className="hero-text">
+              На интенсиве вы получите полную расшифровку своего результата и
+              познакомитесь с системой тюркских орнаментов Kasiet.
+            </p>
           </section>
         )}
 

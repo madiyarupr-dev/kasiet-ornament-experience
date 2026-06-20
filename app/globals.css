@@ -218,3 +218,33 @@ body {
   .q-title { font-size: 23px; }
   .ornament { width: 160px; height: 160px; }
 }
+
+.bullets {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 8px;
+  width: 100%;
+  max-width: 360px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bullets li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(241, 231, 212, 0.72);
+}
+.bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
