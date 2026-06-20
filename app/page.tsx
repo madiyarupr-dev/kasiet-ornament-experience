@@ -204,7 +204,7 @@ export default function Page() {
           <section className="quiz">
             <div className="step serif">{q.step}</div>
             <div className="progress">
-              <span style={{ width: \`\${((current + 1) / QUESTIONS.length) * 100}%\` }} />
+              <span style={{ width: `${((current + 1) / QUESTIONS.length) * 100}%` }} />
             </div>
             <h2 className="q-title serif">{q.title}</h2>
             <p className="q-hint">{q.hint}</p>
